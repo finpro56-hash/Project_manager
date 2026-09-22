@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.35" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <g filter="url(#shadow)">
+    <!-- Board Frame -->
+    <rect x="76" y="86" width="360" height="340" rx="20" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-opacity="0.3" stroke-width="4" />
+    <!-- Header bar -->
+    <rect x="96" y="106" width="320" height="24" rx="8" fill="#ffffff" fill-opacity="0.7" />
+    <!-- Col 1 -->
+    <rect x="96" y="146" width="94" height="110" rx="12" fill="#ffffff" />
+    <rect x="108" y="162" width="70" height="10" rx="4" fill="#6366f1" />
+    <rect x="108" y="180" width="50" height="8" rx="4" fill="#cbd5e1" />
+    <rect x="96" y="270" width="94" height="80" rx="12" fill="#ffffff" fill-opacity="0.9" />
+    <rect x="108" y="286" width="60" height="8" rx="4" fill="#94a3b8" />
+    <!-- Col 2 -->
+    <rect x="209" y="146" width="94" height="150" rx="12" fill="#ffffff" />
+    <rect x="221" y="162" width="70" height="10" rx="4" fill="#06b6d4" />
+    <rect x="221" y="180" width="55" height="8" rx="4" fill="#cbd5e1" />
+    <rect x="221" y="196" width="65" height="8" rx="4" fill="#e2e8f0" />
+    <!-- Col 3 -->
+    <rect x="322" y="146" width="94" height="90" rx="12" fill="#ffffff" />
+    <rect x="334" y="162" width="70" height="10" rx="4" fill="#10b981" />
+    <rect x="334" y="180" width="45" height="8" rx="4" fill="#cbd5e1" />
+  </g>
+  <!-- Floating Checkmark Badge -->
+  <circle cx="360" cy="350" r="54" fill="#10b981" stroke="#ffffff" stroke-width="8" filter="url(#shadow)" />
+  <path d="M338 350l14 14 30 -30" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

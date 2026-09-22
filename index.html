@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Suppress benign [vite] HMR websocket connection errors in AI Studio sandboxed preview
+      (function() {
+        const origError = console.error;
+        console.error = function(...args) {
+          const msg = args.map(function(a) { return typeof a === 'string' ? a : (a && a.message) || ''; }).join(' ');
+          if (msg.includes('[vite]') && (msg.includes('websocket') || msg.includes('failed to connect') || msg.includes('WebSocket'))) {
+            console.debug(...args);
+            return;
+          }
+          origError.apply(console, args);
+        };
+        window.addEventListener('error', function(event) {
+          if (event.message && (event.message.includes('[vite]') || event.message.includes('WebSocket'))) {
+            event.stopImmediatePropagation();
+          }
+        });
+        window.addEventListener('unhandledrejection', function(event) {
+          const reasonStr = String(event.reason || '');
+          if (reasonStr.includes('[vite]') || reasonStr.includes('WebSocket')) {
+            event.preventDefault();
+          }
+        });
+      })();
+    </script>
+    <title>Project Management PWA</title>
+    <meta name="description" content="Offline-capable collaborative project management progressive web app with real-time multi-device sync, granular permissions, push notifications, and customizable tagging." />
+    <meta property="og:title" content="Project Management PWA" />
+    <meta property="og:description" content="Offline-capable collaborative project management progressive web app with real-time multi-device sync, granular permissions, push notifications, and customizable tagging." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ProjectPWA" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

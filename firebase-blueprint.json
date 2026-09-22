@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "members": {
+      "title": "Members",
+      "description": "Workspace user profiles and roles",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "avatar": { "type": "string" },
+        "status": { "type": "string" },
+        "lastSeen": { "type": "number" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "tasks": {
+      "title": "Tasks",
+      "description": "Project tasks",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "tagIds": { "type": "array" },
+        "assigneeId": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "estimatedHours": { "type": "number" },
+        "comments": { "type": "array" },
+        "checklist": { "type": "array" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "version": { "type": "number" }
+      },
+      "required": ["title", "status", "priority", "creatorId"]
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Categorization tags",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["name", "color", "category"]
+    }
+  }
+}
