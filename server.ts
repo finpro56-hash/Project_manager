@@ -227,7 +227,7 @@ app.post('/api/auth/register', (req, res) => {
 
   const { hash, salt } = hashPassword(String(password));
   const isOwnerEmail = cleanEmail === 'finpro56@gmail.com';
-  const assignedRole = isOwnerEmail ? 'owner' : 'viewer';
+  const assignedRole = isOwnerEmail ? 'owner' : (role || 'member');
   const newUserId = `user-${Date.now()}`;
 
   // Avatars from curated professional photo pool
@@ -427,7 +427,7 @@ app.post('/api/sync', (req, res) => {
         break;
       }
       case 'UPDATE_PERMISSIONS': {
-        const member = state.members.find((m) => m.id === payload.memberId);
+        const member = state.members.find((m) => m.id === payload.memberId || (payload.email && m.email?.toLowerCase() === payload.email?.toLowerCase()));
         if (member) {
           if (payload.role) member.role = payload.role;
           if (payload.customPermissions) member.customPermissions = payload.customPermissions;

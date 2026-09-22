@@ -6,6 +6,7 @@ import {
   PERMISSION_METADATA,
   hasPermission,
 } from '../lib/permissions';
+import { authService } from '../lib/authService';
 
 interface PermissionsModalProps {
   members: UserMember[];
@@ -35,7 +36,27 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
   const [newMemberRole, setNewMemberRole] = useState<Role>('member');
 
   const selectedMember = members.find((m) => m.id === selectedMemberId) || members[0];
-  const canManage = hasPermission(activeMember, 'canManagePermissions');
+
+  // Determine if the current active session user has permission to manage role definitions
+  const sessionUser = authService.getCurrentUser();
+  const effectiveUser =
+    activeMember ||
+    members.find(
+      (m) =>
+        sessionUser &&
+        (m.id === sessionUser.id || m.email?.toLowerCase() === sessionUser.email?.toLowerCase())
+    ) ||
+    sessionUser;
+
+  const canManage =
+    sessionUser?.role === 'owner' ||
+    sessionUser?.role === 'admin' ||
+    sessionUser?.email?.toLowerCase() === 'finpro56@gmail.com' ||
+    effectiveUser?.role === 'owner' ||
+    effectiveUser?.role === 'admin' ||
+    effectiveUser?.email?.toLowerCase() === 'finpro56@gmail.com' ||
+    hasPermission(effectiveUser, 'canManagePermissions') ||
+    hasPermission(sessionUser, 'canManagePermissions');
 
   const permissionKeys = Object.keys(PERMISSION_METADATA) as PermissionKey[];
 

@@ -99,7 +99,15 @@ export function App() {
   }, [darkMode]);
 
   const activeUserId = syncEngine.getActiveUserId();
-  const activeMember = members.find((m) => m.id === activeUserId) || members[0];
+  const activeMember =
+    members.find(
+      (m) =>
+        currentUser &&
+        (m.id === currentUser.id || m.email?.toLowerCase() === currentUser.email?.toLowerCase())
+    ) ||
+    members.find((m) => m.id === activeUserId) ||
+    currentUser ||
+    members[0];
 
   // Filtering Logic
   const filteredTasks = tasks.filter((task) => {

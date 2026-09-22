@@ -39,6 +39,18 @@ class AuthService {
 
   constructor() {
     this.init();
+    syncEngine.subscribe(() => {
+      if (this.currentUser) {
+        const activeM = syncEngine.getMembers().find(
+          (m) => m.id === this.currentUser?.id || m.email?.toLowerCase() === this.currentUser?.email?.toLowerCase()
+        );
+        if (activeM && (activeM.role !== this.currentUser.role || JSON.stringify(activeM.customPermissions) !== JSON.stringify(this.currentUser.customPermissions))) {
+          this.currentUser = { ...this.currentUser, role: activeM.role, customPermissions: activeM.customPermissions };
+          localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(this.currentUser));
+          this.notifyListeners();
+        }
+      }
+    });
   }
 
   private async init() {
@@ -122,14 +134,15 @@ class AuthService {
       const cleanEmail = (fbUser.email || '').trim().toLowerCase();
       const isOwner = cleanEmail === 'finpro56@gmail.com';
       const existingMember = syncEngine.getMembers().find((m) => m.email.toLowerCase() === cleanEmail);
-      const assignedRole: Role = isOwner ? 'owner' : (existingMember ? existingMember.role : 'viewer');
+      const assignedRole: Role = isOwner ? 'owner' : (existingMember ? existingMember.role : 'member');
 
       const userMember: UserMember = {
-        id: fbUser.uid,
-        name: fbUser.displayName || cleanEmail.split('@')[0] || 'Google User',
+        id: existingMember?.id || fbUser.uid,
+        name: fbUser.displayName || existingMember?.name || cleanEmail.split('@')[0] || 'Google User',
         email: cleanEmail,
         role: assignedRole,
-        avatar: fbUser.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+        customPermissions: existingMember?.customPermissions || {},
+        avatar: fbUser.photoURL || existingMember?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
         status: 'online',
         lastSeen: Date.now(),
       };
@@ -161,14 +174,15 @@ class AuthService {
         if (fbUser) {
           const isOwner = cleanEmail === 'finpro56@gmail.com';
           const existingMember = syncEngine.getMembers().find((m) => m.email.toLowerCase() === cleanEmail);
-          const assignedRole: Role = isOwner ? 'owner' : (existingMember ? existingMember.role : 'viewer');
+          const assignedRole: Role = isOwner ? 'owner' : (existingMember ? existingMember.role : 'member');
 
           const userMember: UserMember = {
-            id: fbUser.uid,
-            name: fbUser.displayName || cleanEmail.split('@')[0] || 'User',
+            id: existingMember?.id || fbUser.uid,
+            name: fbUser.displayName || existingMember?.name || cleanEmail.split('@')[0] || 'User',
             email: cleanEmail,
             role: assignedRole,
-            avatar: fbUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
+            customPermissions: existingMember?.customPermissions || {},
+            avatar: fbUser.photoURL || existingMember?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
             status: 'online',
             lastSeen: Date.now(),
           };
@@ -266,7 +280,8 @@ class AuthService {
   ): Promise<{ success: boolean; error?: string }> {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
-    const assignedRole: Role = cleanEmail === 'finpro56@gmail.com' ? 'owner' : 'viewer';
+    const existingMember = syncEngine.getMembers().find((m) => m.email.toLowerCase() === cleanEmail);
+    const assignedRole: Role = cleanEmail === 'finpro56@gmail.com' ? 'owner' : (existingMember ? existingMember.role : 'member');
 
     if (navigator.onLine && !syncEngine.isEffectiveOffline()) {
       try {
@@ -399,6 +414,14 @@ class AuthService {
 
   public getCurrentUser(): UserMember | null {
     return this.currentUser;
+  }
+
+  public updateUserRole(role: Role) {
+    if (this.currentUser) {
+      this.currentUser = { ...this.currentUser, role };
+      localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(this.currentUser));
+      this.notifyListeners();
+    }
   }
 
   public getToken(): string | null {

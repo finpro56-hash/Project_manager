@@ -93,7 +93,12 @@ class SyncEngine {
 
     subscribeFirestoreMembers((remoteMembers) => {
       if (remoteMembers.length > 0) {
-        this.members = remoteMembers;
+        this.members = remoteMembers.map((rm) => {
+          if (rm.email?.toLowerCase() === 'finpro56@gmail.com') {
+            rm.role = 'owner';
+          }
+          return rm;
+        });
         this.saveToStorage();
         this.notifyListeners();
       }
@@ -496,7 +501,7 @@ class SyncEngine {
         break;
       }
       case 'UPDATE_PERMISSIONS': {
-        const member = this.members.find((m) => m.id === payload.memberId);
+        const member = this.members.find((m) => m.id === payload.memberId || (payload.email && m.email?.toLowerCase() === payload.email?.toLowerCase()));
         if (member) {
           if (payload.role) member.role = payload.role;
           if (payload.customPermissions) member.customPermissions = payload.customPermissions;

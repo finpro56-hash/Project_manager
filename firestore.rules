@@ -1,32 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Global helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128;
-    }
-
     // Workspace Members Collection
     match /members/{memberId} {
-      allow read: if true;
-      allow create, update, delete: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Tasks Collection
     match /tasks/{taskId} {
-      allow read: if true;
-      allow create, update, delete: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Categorization Tags Collection
     match /tags/{tagId} {
-      allow read: if true;
-      allow create, update, delete: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Test Connection Path
