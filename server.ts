@@ -665,10 +665,7 @@ async function startServer() {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: {
-          server,
-          path: '/vite-hmr',
-        },
+        hmr: false,
       },
       appType: 'spa',
     });
