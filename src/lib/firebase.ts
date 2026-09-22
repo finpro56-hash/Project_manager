@@ -20,6 +20,7 @@ import {
   query,
   orderBy,
   getDocs,
+  getDocFromServer,
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { Task, UserMember, TaskTag, Role } from '../types';
@@ -35,6 +36,67 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 // Initialize Firestore Database with specific databaseId if provided
 const dbId = (firebaseConfig as any).firestoreDatabaseId || '(default)';
 export const db = getFirestore(app, dbId);
+
+// Test Firestore server connection on startup
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn('Firebase connection notice: client is offline or starting up.');
+    }
+  }
+}
+testConnection();
+
+// --- Firestore Error Handler ---
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || [],
+    },
+    operationType,
+    path,
+  };
+  console.error('Firestore Error:', JSON.stringify(errInfo));
+  return errInfo;
+}
 
 // --- Auth Helper Functions ---
 
@@ -112,7 +174,8 @@ export function subscribeAuthState(callback: (user: FirebaseUser | null) => void
 
 // Tasks
 export function subscribeFirestoreTasks(callback: (tasks: Task[]) => void) {
-  const q = query(collection(db, 'tasks'));
+  const path = 'tasks';
+  const q = query(collection(db, path));
   return onSnapshot(
     q,
     (snapshot) => {
@@ -125,30 +188,33 @@ export function subscribeFirestoreTasks(callback: (tasks: Task[]) => void) {
       callback(tasks);
     },
     (err) => {
-      console.warn('Firestore tasks snapshot error:', err);
+      handleFirestoreError(err, OperationType.GET, path);
     }
   );
 }
 
 export async function saveTaskFirestore(task: Task) {
+  const path = `tasks/${task.id}`;
   try {
     await setDoc(doc(db, 'tasks', task.id), task, { merge: true });
   } catch (err) {
-    console.error('Error saving task to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
 
 export async function deleteTaskFirestore(taskId: string) {
+  const path = `tasks/${taskId}`;
   try {
     await deleteDoc(doc(db, 'tasks', taskId));
   } catch (err) {
-    console.error('Error deleting task from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }
 
 // Members
 export function subscribeFirestoreMembers(callback: (members: UserMember[]) => void) {
-  const q = query(collection(db, 'members'));
+  const path = 'members';
+  const q = query(collection(db, path));
   return onSnapshot(
     q,
     (snapshot) => {
@@ -161,30 +227,33 @@ export function subscribeFirestoreMembers(callback: (members: UserMember[]) => v
       }
     },
     (err) => {
-      console.warn('Firestore members snapshot error:', err);
+      handleFirestoreError(err, OperationType.GET, path);
     }
   );
 }
 
 export async function saveMemberFirestore(member: UserMember) {
+  const path = `members/${member.id}`;
   try {
     await setDoc(doc(db, 'members', member.id), member, { merge: true });
   } catch (err) {
-    console.error('Error saving member to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
 
 export async function deleteMemberFirestore(memberId: string) {
+  const path = `members/${memberId}`;
   try {
     await deleteDoc(doc(db, 'members', memberId));
   } catch (err) {
-    console.error('Error deleting member from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }
 
 // Tags
 export function subscribeFirestoreTags(callback: (tags: TaskTag[]) => void) {
-  const q = query(collection(db, 'tags'));
+  const path = 'tags';
+  const q = query(collection(db, path));
   return onSnapshot(
     q,
     (snapshot) => {
@@ -197,23 +266,25 @@ export function subscribeFirestoreTags(callback: (tags: TaskTag[]) => void) {
       }
     },
     (err) => {
-      console.warn('Firestore tags snapshot error:', err);
+      handleFirestoreError(err, OperationType.GET, path);
     }
   );
 }
 
 export async function saveTagFirestore(tag: TaskTag) {
+  const path = `tags/${tag.id}`;
   try {
     await setDoc(doc(db, 'tags', tag.id), tag, { merge: true });
   } catch (err) {
-    console.error('Error saving tag to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
 
 export async function deleteTagFirestore(tagId: string) {
+  const path = `tags/${tagId}`;
   try {
     await deleteDoc(doc(db, 'tags', tagId));
   } catch (err) {
-    console.error('Error deleting tag from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }

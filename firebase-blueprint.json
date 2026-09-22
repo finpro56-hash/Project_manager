@@ -48,5 +48,19 @@
       },
       "required": ["name", "color", "category"]
     }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "members",
+      "description": "Workspace user profiles and permission roles"
+    },
+    "/tasks/{taskId}": {
+      "schema": "tasks",
+      "description": "Workspace tasks and activity items"
+    },
+    "/tags/{tagId}": {
+      "schema": "tags",
+      "description": "Custom project labels and categorization tags"
+    }
   }
 }
